@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "SiLapor Mobile",
+    "slug": "silapor-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "silapor",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.silapor.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      },
+      "package": "com.silapor.mobile"
+    },
+    "plugins": ["expo-router"]
+  }
+}
