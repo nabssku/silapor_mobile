@@ -52,7 +52,7 @@ export const formatTanggal = (dateString: string): string => {
   return `${hari} ${namaBulan} ${tahun}`;
 };
 
-// Custom function: Waktu relatif (e.g. "2 hari lalu")
+// Custom function: waktuRelatif atau waktu sebenarnya
 export const waktuRelatif = (dateString: string): string => {
   const now = new Date();
   const date = new Date(dateString);
