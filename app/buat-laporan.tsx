@@ -12,6 +12,7 @@ import { useState } from "react";
 import { globalStyles, Colors } from "../constants/styles";
 import { dummyCategories, dummyLocations } from "../constants/data";
 import { Category, Location } from "../types";
+import { validateLaporanForm } from "../functions";
 
 export default function BuatLaporanScreen() {
   const router = useRouter();
@@ -23,20 +24,9 @@ export default function BuatLaporanScreen() {
 
   // Custom function: validasi form
   const validateForm = (): boolean => {
-    if (!judul.trim()) {
-      Alert.alert("Error", "Judul laporan harus diisi!");
-      return false;
-    }
-    if (!deskripsi.trim()) {
-      Alert.alert("Error", "Deskripsi kerusakan harus diisi!");
-      return false;
-    }
-    if (!selectedCategory) {
-      Alert.alert("Error", "Pilih kategori kerusakan!");
-      return false;
-    }
-    if (!selectedLocation) {
-      Alert.alert("Error", "Pilih lokasi kerusakan!");
+    const result = validateLaporanForm(judul, deskripsi, selectedCategory, selectedLocation);
+    if (!result.isValid) {
+      Alert.alert("Error", result.message || "Data form tidak valid!");
       return false;
     }
     return true;

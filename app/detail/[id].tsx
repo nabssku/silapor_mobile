@@ -8,17 +8,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import { globalStyles, Colors } from "../../constants/styles";
-import { dummyReports } from "../../constants/data";
-import { formatTanggal, getStatusLabel, getStatusColor, getPriorityColor, generateReportCode } from "../../constants/helpers";
+import {
+  findReport,
+  formatTanggal,
+  getStatusLabel,
+  getStatusColor,
+  getPriorityColor,
+  generateReportCode,
+} from "../../functions";
 
 export default function DetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-
-  // Custom function: cari report berdasarkan id
-  const findReport = (reportId: string) => {
-    return dummyReports.find((r) => r.id === reportId);
-  };
 
   const report = findReport(id);
 

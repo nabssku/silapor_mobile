@@ -1,6 +1,6 @@
 // =============================================
 // HALAMAN KATEGORI
-// Menerapkan: FlatList, Custom Function, 
+// Menerapkan: FlatList, Custom Function,
 //   External & Inline Style, Array of Objects
 // =============================================
 
@@ -9,30 +9,39 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 import { globalStyles, Colors } from "../constants/styles";
-import { dummyCategories, dummyReports } from "../constants/data";
+import { dummyCategories } from "../constants/data";
 import { Category } from "../types";
-import { getCategoryIcon } from "../constants/helpers";
-
-// Custom function: hitung jumlah laporan per kategori
-const countReportsByCategory = (categoryId: number): number => {
-  return dummyReports.filter((r) => r.category?.id === categoryId).length;
-};
-
-// Warna untuk setiap kategori
-const categoryColors: string[] = [
-  "#f59e0b", "#ef4444", "#3b82f6", "#06b6d4", "#8b5cf6", "#22c55e",
-];
+import {
+  countReportsByCategory,
+  categoryColors,
+  getCategoryIcon,
+} from "../functions";
 
 export default function KategoriScreen() {
   const router = useRouter();
 
   // Custom function: render item kategori
-  const renderCategory = ({ item, index }: { item: Category; index: number }) => {
+  const renderCategory = ({
+    item,
+    index,
+  }: {
+    item: Category;
+    index: number;
+  }) => {
     const color = categoryColors[index % categoryColors.length];
     const count = countReportsByCategory(item.id);
 
     return (
-      <Pressable style={[globalStyles.card, { flexDirection: "row", alignItems: "center", marginHorizontal: 20 }]}>
+      <Pressable
+        style={[
+          globalStyles.card,
+          { flexDirection: "row", alignItems: "center", marginHorizontal: 20, },
+        ]}
+        onPress={() => {
+          console.log(`Kategori Dipilih:${item.name}`)
+        }
+      }
+      >
         {/* Icon — inline styling */}
         <View
           style={{
@@ -45,7 +54,11 @@ export default function KategoriScreen() {
             marginRight: 14,
           }}
         >
-          <Ionicons name={getCategoryIcon(item.name) as any} size={24} color={color} />
+          <Ionicons
+            name={getCategoryIcon(item.name) as any}
+            size={24}
+            color={color}
+          />
         </View>
 
         {/* Info */}
@@ -55,8 +68,17 @@ export default function KategoriScreen() {
         </View>
 
         {/* Count badge */}
-        <View style={{ backgroundColor: color + "18", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 }}>
-          <Text style={{ color: color, fontWeight: "bold", fontSize: 13 }}>{count}</Text>
+        <View
+          style={{
+            backgroundColor: color + "18",
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+          }}
+        >
+          <Text style={{ color: color, fontWeight: "bold", fontSize: 13 }}>
+            {count}
+          </Text>
         </View>
       </Pressable>
     );
@@ -70,7 +92,9 @@ export default function KategoriScreen() {
           <Pressable onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={Colors.white} />
           </Pressable>
-          <Text style={[globalStyles.headerTitle, { marginLeft: 16, fontSize: 20 }]}>
+          <Text
+            style={[globalStyles.headerTitle, { marginLeft: 16, fontSize: 20 }]}
+          >
             Kategori Kerusakan
           </Text>
         </View>

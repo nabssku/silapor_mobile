@@ -16,7 +16,7 @@ import { Report, MenuItem } from "../types";
 // Array of Objects & Dummy Data
 import { dummyReports, dummyStats, menuItems } from "../constants/data";
 // Custom Functions
-import { formatTanggal, waktuRelatif, getStatusLabel, getStatusColor, generateReportCode } from "../constants/helpers";
+import { formatTanggal, waktuRelatif, getStatusLabel, getStatusColor, generateReportCode } from "../functions";
 
 // =============================================
 // CUSTOM FUNCTION: Render Stat Card

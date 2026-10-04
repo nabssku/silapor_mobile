@@ -10,14 +10,15 @@ import { useRouter } from "expo-router";
 import { globalStyles, Colors } from "../../constants/styles";
 import { Report, ReportStatus } from "../../types";
 import { dummyReports } from "../../constants/data";
-import { getStatusLabel, getStatusColor, getPriorityColor, generateReportCode, waktuRelatif } from "../../constants/helpers";
+import {
+  filterByStatus,
+  getStatusLabel,
+  getStatusColor,
+  getPriorityColor,
+  generateReportCode,
+  waktuRelatif,
+} from "../../functions";
 import { useState } from "react";
-
-// Custom function: Filter reports by status
-const filterByStatus = (reports: Report[], status: ReportStatus | "semua"): Report[] => {
-  if (status === "semua") return reports;
-  return reports.filter((r) => r.status === status);
-};
 
 // Type untuk filter tabs
 type FilterTab = {
