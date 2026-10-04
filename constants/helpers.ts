@@ -84,3 +84,11 @@ export const generateReportCode = (id: string): string => {
   const short = id.replace("rpt-", "").toUpperCase().padStart(4, "0");
   return `#RPT-${short}`;
 };
+export const getDynamicGreeting = (): string => {
+  const currentHour = new Date().getHours();
+
+  if (currentHour < 12) return "Selamat Pagi 🌅";
+  if (currentHour < 15) return "Selamat Siang ☀️";
+  if (currentHour < 18) return "Selamat Sore 🌇";
+  return "Selamat Malam 🌙";
+};

@@ -5,7 +5,7 @@
 //   Inline & External Styles, Komponen Dasar
 // =============================================
 
-import { View, Text, ScrollView, Pressable, FlatList } from "react-native";
+import { View, Text, ScrollView, Pressable, FlatList, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -16,7 +16,7 @@ import { Report, MenuItem } from "../types";
 // Array of Objects & Dummy Data
 import { dummyReports, dummyStats, menuItems } from "../constants/data";
 // Custom Functions
-import { formatTanggal, waktuRelatif, getStatusLabel, getStatusColor, generateReportCode } from "../constants/helpers";
+import { formatTanggal, waktuRelatif, getStatusLabel, getStatusColor, generateReportCode, getDynamicGreeting } from "../constants/helpers";
 
 // =============================================
 // CUSTOM FUNCTION: Render Stat Card
@@ -132,6 +132,20 @@ const ReportCard = ({ item }: { item: Report }) => {
 };
 
 // =============================================
+// CUSTOM FUNCTION: Render Empty Report State
+// =============================================
+const renderEmptyReport = () => {
+  return (
+    <View style={{ alignItems: "center", paddingVertical: 40 }}>
+      <Ionicons name="document-text-outline" size={48} color={Colors.textSecondary} />
+      <Text style={{ marginTop: 12, color: Colors.textSecondary, fontSize: 14 }}>
+        Belum ada laporan terbaru.
+      </Text>
+    </View>
+  );
+};
+
+// =============================================
 // MAIN COMPONENT: Home Screen
 // =============================================
 export default function HomeScreen() {
@@ -142,6 +156,22 @@ export default function HomeScreen() {
     router.push(route as any);
   };
 
+  // Custom function: Konfirmasi Logout
+  const handleLogout = () => {
+    Alert.alert(
+      "Konfirmasi Keluar",
+      "Apakah Anda yakin ingin keluar dari aplikasi SiLapor?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Keluar",
+          style: "destructive",
+          onPress: () => console.log("Logout berhasil ditekan") // Bisa diganti router.replace('/login') nanti
+        }
+      ]
+    );
+  };
+
   return (
     <View style={globalStyles.container}>
       <ScrollView>
@@ -149,31 +179,31 @@ export default function HomeScreen() {
         <View style={globalStyles.header}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <View>
-              <Text style={{ color: "#94a3b8", fontSize: 14 }}>Selamat Datang 👋</Text>
+              {/* Menggunakan custom function untuk sapaan berdasarkan waktu */}
+              <Text style={{ color: "#94a3b8", fontSize: 14 }}>{getDynamicGreeting()}</Text>
               <Text style={globalStyles.headerTitle}>Nabil Sahsada</Text>
               <Text style={globalStyles.headerSubtitle}>Mahasiswa · 202410370110357</Text>
             </View>
-            {/* Avatar — inline styling */}
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: Colors.primary,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={{ color: Colors.white, fontSize: 18, fontWeight: "bold" }}>NS</Text>
-            </View>
+
+            {/* Avatar dibungkus Pressable agar bisa diklik untuk Logout */}
+            <Pressable onPress={handleLogout}>
+              <View
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: Colors.primary,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ color: Colors.white, fontSize: 18, fontWeight: "bold" }}>NS</Text>
+              </View>
+            </Pressable>
           </View>
 
           {/* ===== STATS ROW — loop dengan map() ===== */}
           <View style={globalStyles.statsRow}>
-            {/* 
-              LOOP MENGGUNAKAN MAP: 
-              Iterasi array of objects untuk render stat cards 
-            */}
             {[
               { label: "Total", value: dummyStats.total, color: Colors.info },
               { label: "Aktif", value: dummyStats.aktif, color: Colors.warning },
@@ -187,10 +217,6 @@ export default function HomeScreen() {
         <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
           <Text style={globalStyles.sectionTitle}>Menu</Text>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            {/* 
-              LOOP MENGGUNAKAN MAP pada Array of Objects (menuItems):
-              Setiap item punya id, title, icon, color, route
-            */}
             {menuItems.map((item) => renderMenuButton(item, navigateTo))}
           </View>
         </View>
@@ -206,18 +232,14 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          {/* 
-            FLATLIST — Modul 1 Requirement:
-            Menampilkan array of objects (dummyReports) secara efisien.
-            renderItem menggunakan custom function (ReportCard).
-            keyExtractor mengambil id unik tiap item.
-          */}
+          {/* Menambahkan properti ListEmptyComponent untuk menampilkan desain saat tidak ada data */}
           <FlatList
             data={dummyReports}
             renderItem={({ item }) => <ReportCard item={item} />}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}
             showsVerticalScrollIndicator={false}
+            ListEmptyComponent={renderEmptyReport}
           />
         </View>
 
