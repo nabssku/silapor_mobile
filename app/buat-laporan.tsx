@@ -108,6 +108,7 @@ export default function BuatLaporanScreen() {
             onChangeText={setJudul}
             placeholder="Contoh: AC Mati di Ruang 302"
             placeholderTextColor={Colors.textSecondary}
+            numberOfLines={1}
             style={{
               backgroundColor: "#f8fafc",
               borderWidth: 1,

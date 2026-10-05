@@ -16,7 +16,13 @@ import { Report, MenuItem } from "../types";
 // Array of Objects & Dummy Data
 import { dummyReports, dummyStats, menuItems } from "../constants/data";
 // Custom Functions
-import { formatTanggal, waktuRelatif, getStatusLabel, getStatusColor, generateReportCode } from "../functions";
+import {
+  formatTanggal,
+  waktuRelatif,
+  getStatusLabel,
+  getStatusColor,
+  generateReportCode,
+} from "../functions";
 
 // =============================================
 // CUSTOM FUNCTION: Render Stat Card
@@ -24,9 +30,46 @@ import { formatTanggal, waktuRelatif, getStatusLabel, getStatusColor, generateRe
 const renderStatCard = (label: string, value: number, color: string) => {
   return (
     // Inline styling (langsung di style prop)
-    <View style={[globalStyles.statCard, { backgroundColor: color }]} key={label}>
+    <View
+      style={[globalStyles.statCard, { backgroundColor: color }]}
+      key={label}
+    >
       <Text style={globalStyles.statNumber}>{value}</Text>
       <Text style={globalStyles.statLabel}>{label}</Text>
+    </View>
+  );
+};
+
+
+///============================================
+// Cuscom Funsi buat welcomeTime
+// ex : Selamat Pagi, Siang, Sore, Malam
+// ============================================
+const welcomeTime = (nama: string) => {
+  const greet = () => {
+    const now = new Date().getHours();
+    if (now >= 4 && now < 11) {
+      return "Pagi";
+    }
+    if (now >= 11 && now < 15) {
+      return "Siang";
+    }
+    if (now >= 15 && now < 18) {
+      return "Sore";
+    } else {
+      return "Malam";
+    }
+  };
+
+  return (
+    <View>
+      <Text style={{ color: "#94a3b8", fontSize: 14 }}>
+        Halo, Selamat {greet()}
+      </Text>
+      <Text style={globalStyles.headerTitle}>{nama}</Text>
+      <Text style={globalStyles.headerSubtitle}>
+        Mahasiswa · 202410370110357
+      </Text>
     </View>
   );
 };
@@ -53,10 +96,24 @@ const renderMenuButton = (item: MenuItem, onPress: (route: string) => void) => {
         elevation: 2,
       }}
     >
-      <View style={{ backgroundColor: item.color + "15", borderRadius: 12, padding: 10, marginBottom: 8 }}>
+      <View
+        style={{
+          backgroundColor: item.color + "15",
+          borderRadius: 12,
+          padding: 10,
+          marginBottom: 8,
+        }}
+      >
         <Ionicons name={item.icon as any} size={24} color={item.color} />
       </View>
-      <Text style={{ fontSize: 12, fontWeight: "600", color: Colors.text, textAlign: "center" }}>
+      <Text
+        style={{
+          fontSize: 12,
+          fontWeight: "600",
+          color: Colors.text,
+          textAlign: "center",
+        }}
+      >
         {item.title}
       </Text>
     </Pressable>
@@ -74,7 +131,10 @@ const ReportCard = ({ item }: { item: Report }) => {
     <Pressable
       onPress={() => router.push(`/detail/${item.id}`)}
       // External style + inline style (gabungan)
-      style={[globalStyles.card, { flexDirection: "row", alignItems: "flex-start" }]}
+      style={[
+        globalStyles.card,
+        { flexDirection: "row", alignItems: "flex-start" },
+      ]}
     >
       {/* Icon kategori */}
       <View
@@ -90,12 +150,26 @@ const ReportCard = ({ item }: { item: Report }) => {
 
       {/* Info laporan */}
       <View style={{ flex: 1 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Text style={{ fontSize: 11, color: Colors.textSecondary, fontWeight: "500" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 11,
+              color: Colors.textSecondary,
+              fontWeight: "500",
+            }}
+          >
             {generateReportCode(item.id)}
           </Text>
           {/* Badge status — inline styling */}
-          <View style={[globalStyles.badge, { backgroundColor: statusColor.bg }]}>
+          <View
+            style={[globalStyles.badge, { backgroundColor: statusColor.bg }]}
+          >
             <Text style={[globalStyles.badgeText, { color: statusColor.text }]}>
               {getStatusLabel(item.status)}
             </Text>
@@ -110,18 +184,45 @@ const ReportCard = ({ item }: { item: Report }) => {
           {item.description}
         </Text>
 
-        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8, gap: 12 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: 8,
+            gap: 12,
+          }}
+        >
           {item.location && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="location-outline" size={13} color={Colors.textSecondary} />
-              <Text style={{ fontSize: 12, color: Colors.textSecondary, marginLeft: 3 }}>
+              <Ionicons
+                name="location-outline"
+                size={13}
+                color={Colors.textSecondary}
+              />
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: Colors.textSecondary,
+                  marginLeft: 3,
+                }}
+              >
                 {item.location.name}
               </Text>
             </View>
           )}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Ionicons name="time-outline" size={13} color={Colors.textSecondary} />
-            <Text style={{ fontSize: 12, color: Colors.textSecondary, marginLeft: 3 }}>
+            <Ionicons
+              name="time-outline"
+              size={13}
+              color={Colors.textSecondary}
+            />
+            <Text
+              style={{
+                fontSize: 12,
+                color: Colors.textSecondary,
+                marginLeft: 3,
+              }}
+            >
               {waktuRelatif(item.createdAt)}
             </Text>
           </View>
@@ -147,12 +248,14 @@ export default function HomeScreen() {
       <ScrollView>
         {/* ===== HEADER ===== */}
         <View style={globalStyles.header}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <View>
-              <Text style={{ color: "#94a3b8", fontSize: 14 }}>Selamat Datang 👋</Text>
-              <Text style={globalStyles.headerTitle}>Nabil Sahsada</Text>
-              <Text style={globalStyles.headerSubtitle}>Mahasiswa · 202410370110357</Text>
-            </View>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            { welcomeTime("Nabil")}
             {/* Avatar — inline styling */}
             <View
               style={{
@@ -164,21 +267,37 @@ export default function HomeScreen() {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ color: Colors.white, fontSize: 18, fontWeight: "bold" }}>NS</Text>
+              <Text
+                style={{
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              >
+                NS
+              </Text>
             </View>
           </View>
 
-          {/* ===== STATS ROW — loop dengan map() ===== */}
+          {/* ===== STATS ROW — loop dengan mapppppppp ===== */}
           <View style={globalStyles.statsRow}>
-            {/* 
-              LOOP MENGGUNAKAN MAP: 
-              Iterasi array of objects untuk render stat cards 
-            */}
             {[
               { label: "Total", value: dummyStats.total, color: Colors.info },
-              { label: "Aktif", value: dummyStats.aktif, color: Colors.warning },
-              { label: "Selesai", value: dummyStats.selesai, color: Colors.success },
-              { label: "Ditolak", value: dummyStats.ditolak, color: Colors.danger },
+              {
+                label: "Aktif",
+                value: dummyStats.aktif,
+                color: Colors.warning,
+              },
+              {
+                label: "Selesai",
+                value: dummyStats.selesai,
+                color: Colors.success,
+              },
+              {
+                label: "Ditolak",
+                value: dummyStats.ditolak,
+                color: Colors.danger,
+              },
             ].map((stat) => renderStatCard(stat.label, stat.value, stat.color))}
           </View>
         </View>
@@ -187,7 +306,7 @@ export default function HomeScreen() {
         <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
           <Text style={globalStyles.sectionTitle}>Menu</Text>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            {/* 
+            {/*
               LOOP MENGGUNAKAN MAP pada Array of Objects (menuItems):
               Setiap item punya id, title, icon, color, route
             */}
@@ -197,16 +316,29 @@ export default function HomeScreen() {
 
         {/* ===== LAPORAN TERBARU — FlatList ===== */}
         <View style={{ paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Text style={globalStyles.sectionTitle}>Laporan Terbaru</Text>
             <Pressable onPress={() => navigateTo("/laporan")}>
-              <Text style={{ color: Colors.primary, fontSize: 13, fontWeight: "600", marginTop: 24 }}>
+              <Text
+                style={{
+                  color: Colors.primary,
+                  fontSize: 13,
+                  fontWeight: "600",
+                  marginTop: 24,
+                }}
+              >
                 Lihat Semua →
               </Text>
             </Pressable>
           </View>
 
-          {/* 
+          {/*
             FLATLIST — Modul 1 Requirement:
             Menampilkan array of objects (dummyReports) secara efisien.
             renderItem menggunakan custom function (ReportCard).
@@ -226,7 +358,9 @@ export default function HomeScreen() {
           <Text style={{ color: Colors.textSecondary, fontSize: 12 }}>
             SiLapor Mobile v1.0
           </Text>
-          <Text style={{ color: Colors.textSecondary, fontSize: 11, marginTop: 2 }}>
+          <Text
+            style={{ color: Colors.textSecondary, fontSize: 11, marginTop: 2 }}
+          >
             Sistem Pelaporan Fasilitas Kampus UMM
           </Text>
         </View>
