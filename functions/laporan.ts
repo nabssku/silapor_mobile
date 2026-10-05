@@ -16,6 +16,7 @@ export const filterByStatus = (
   return reports.filter((r) => r.status === status);
 };
 
+// Custom funciton buat filterDanMengurutkan dari besar ke terkecil
 export const filterAndSortReports = (
   reports: Report[],
   status: ReportStatus | "semua",
@@ -27,6 +28,7 @@ export const filterAndSortReports = (
       const matchPriority = priority === "semua" || r.priority === priority;
       return matchStatus && matchPriority;
     })
+    //rumusnya b - a (besar ke terkecil)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
