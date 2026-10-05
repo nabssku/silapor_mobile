@@ -5,3 +5,4 @@
 
 export * from "./kategori";
 export * from "./laporan";
+export * from "./theme";

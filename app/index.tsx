@@ -2,17 +2,17 @@
 // HOME SCREEN — Dashboard SiLapor
 // Menerapkan: Custom Function, Loop (map),
 //   FlatList, Type, Array of Objects,
-//   Inline & External Styles, Komponen Dasar
+//   Inline & External Styles, Komponen Dasar & Dynamic Theme
 // =============================================
 
 import { View, Text, ScrollView, Pressable, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTheme } from "../context/ThemeContext";
 
-// External styles (import dari file terpisah)
-import { globalStyles, Colors } from "../constants/styles";
 // Types & Interfaces
 import { Report, MenuItem } from "../types";
+import { ThemeColors } from "../constants/theme";
 // Array of Objects & Dummy Data
 import { dummyReports, dummyStats, menuItems } from "../constants/data";
 // Custom Functions
@@ -27,25 +27,24 @@ import {
 // =============================================
 // CUSTOM FUNCTION: Render Stat Card
 // =============================================
-const renderStatCard = (label: string, value: number, color: string) => {
+const renderStatCard = (label: string, value: number, color: string, styles: any) => {
   return (
     // Inline styling (langsung di style prop)
     <View
-      style={[globalStyles.statCard, { backgroundColor: color }]}
+      style={[styles.statCard, { backgroundColor: color }]}
       key={label}
     >
-      <Text style={globalStyles.statNumber}>{value}</Text>
-      <Text style={globalStyles.statLabel}>{label}</Text>
+      <Text style={styles.statNumber}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 };
 
-
-///============================================
-// Cuscom Funsi buat welcomeTime
+// ============================================
+// Custom Fungsi buat welcomeTime
 // ex : Selamat Pagi, Siang, Sore, Malam
 // ============================================
-const welcomeTime = (nama: string) => {
+const welcomeTime = (nama: string, styles: any, theme: ThemeColors) => {
   const greet = () => {
     const now = new Date().getHours();
     if (now >= 4 && now < 11) {
@@ -63,11 +62,11 @@ const welcomeTime = (nama: string) => {
 
   return (
     <View>
-      <Text style={{ color: "#94a3b8", fontSize: 14 }}>
+      <Text style={{ color: theme.textMuted, fontSize: 14 }}>
         Halo, Selamat {greet()}
       </Text>
-      <Text style={globalStyles.headerTitle}>{nama}</Text>
-      <Text style={globalStyles.headerSubtitle}>
+      <Text style={styles.headerTitle}>{nama}</Text>
+      <Text style={styles.headerSubtitle}>
         Mahasiswa · 202410370110357
       </Text>
     </View>
@@ -77,15 +76,17 @@ const welcomeTime = (nama: string) => {
 // =============================================
 // CUSTOM FUNCTION: Render Menu Button
 // =============================================
-const renderMenuButton = (item: MenuItem, onPress: (route: string) => void) => {
+const renderMenuButton = (item: MenuItem, onPress: (route: string) => void, theme: ThemeColors) => {
   return (
     <Pressable
       key={item.id}
       onPress={() => onPress(item.route)}
-      // Inline styling
+      // Inline styling + Theme Card
       style={{
         flex: 1,
-        backgroundColor: Colors.card,
+        backgroundColor: theme.card,
+        borderColor: theme.border,
+        borderWidth: 1,
         borderRadius: 14,
         padding: 16,
         alignItems: "center",
@@ -98,7 +99,7 @@ const renderMenuButton = (item: MenuItem, onPress: (route: string) => void) => {
     >
       <View
         style={{
-          backgroundColor: item.color + "15",
+          backgroundColor: item.color + "20",
           borderRadius: 12,
           padding: 10,
           marginBottom: 8,
@@ -110,7 +111,7 @@ const renderMenuButton = (item: MenuItem, onPress: (route: string) => void) => {
         style={{
           fontSize: 12,
           fontWeight: "600",
-          color: Colors.text,
+          color: theme.text,
           textAlign: "center",
         }}
       >
@@ -124,28 +125,29 @@ const renderMenuButton = (item: MenuItem, onPress: (route: string) => void) => {
 // CUSTOM FUNCTION: Render Report Card (untuk FlatList)
 // =============================================
 const ReportCard = ({ item }: { item: Report }) => {
-  const statusColor = getStatusColor(item.status);
   const router = useRouter();
+  const { theme, styles } = useTheme();
+  const statusColor = getStatusColor(item.status);
 
   return (
     <Pressable
       onPress={() => router.push(`/detail/${item.id}`)}
       // External style + inline style (gabungan)
       style={[
-        globalStyles.card,
+        styles.card,
         { flexDirection: "row", alignItems: "flex-start" },
       ]}
     >
       {/* Icon kategori */}
       <View
         style={{
-          backgroundColor: Colors.primary + "12",
+          backgroundColor: theme.primarySubtle,
           borderRadius: 12,
           padding: 10,
           marginRight: 12,
         }}
       >
-        <Ionicons name="alert-circle" size={22} color={Colors.primary} />
+        <Ionicons name="alert-circle" size={22} color={theme.primary} />
       </View>
 
       {/* Info laporan */}
@@ -160,7 +162,7 @@ const ReportCard = ({ item }: { item: Report }) => {
           <Text
             style={{
               fontSize: 11,
-              color: Colors.textSecondary,
+              color: theme.textSecondary,
               fontWeight: "500",
             }}
           >
@@ -168,19 +170,19 @@ const ReportCard = ({ item }: { item: Report }) => {
           </Text>
           {/* Badge status — inline styling */}
           <View
-            style={[globalStyles.badge, { backgroundColor: statusColor.bg }]}
+            style={[styles.badge, { backgroundColor: statusColor.bg }]}
           >
-            <Text style={[globalStyles.badgeText, { color: statusColor.text }]}>
+            <Text style={[styles.badgeText, { color: statusColor.text }]}>
               {getStatusLabel(item.status)}
             </Text>
           </View>
         </View>
 
-        <Text style={globalStyles.cardTitle} numberOfLines={1}>
+        <Text style={styles.cardTitle} numberOfLines={1}>
           {item.title}
         </Text>
 
-        <Text style={globalStyles.cardDescription} numberOfLines={2}>
+        <Text style={styles.cardDescription} numberOfLines={2}>
           {item.description}
         </Text>
 
@@ -197,12 +199,12 @@ const ReportCard = ({ item }: { item: Report }) => {
               <Ionicons
                 name="location-outline"
                 size={13}
-                color={Colors.textSecondary}
+                color={theme.textSecondary}
               />
               <Text
                 style={{
                   fontSize: 12,
-                  color: Colors.textSecondary,
+                  color: theme.textSecondary,
                   marginLeft: 3,
                 }}
               >
@@ -214,12 +216,12 @@ const ReportCard = ({ item }: { item: Report }) => {
             <Ionicons
               name="time-outline"
               size={13}
-              color={Colors.textSecondary}
+              color={theme.textSecondary}
             />
             <Text
               style={{
                 fontSize: 12,
-                color: Colors.textSecondary,
+                color: theme.textSecondary,
                 marginLeft: 3,
               }}
             >
@@ -237,6 +239,7 @@ const ReportCard = ({ item }: { item: Report }) => {
 // =============================================
 export default function HomeScreen() {
   const router = useRouter();
+  const { theme, styles, isDark, toggleTheme } = useTheme();
 
   // Custom function: navigasi
   const navigateTo = (route: string): void => {
@@ -244,10 +247,10 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={globalStyles.container}>
+    <View style={styles.container}>
       <ScrollView>
         {/* ===== HEADER ===== */}
-        <View style={globalStyles.header}>
+        <View style={styles.header}>
           <View
             style={{
               flexDirection: "row",
@@ -255,62 +258,85 @@ export default function HomeScreen() {
               alignItems: "center",
             }}
           >
-            { welcomeTime("Nabil")}
-            {/* Avatar — inline styling */}
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: Colors.primary,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
+            {welcomeTime("Nabil", styles, theme)}
+
+            {/* Header Right: Theme Switcher Button + Avatar */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Pressable
+                onPress={toggleTheme}
+                accessibilityLabel="Ganti tema terang / gelap"
                 style={{
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: "bold",
+                  width: 42,
+                  height: 42,
+                  borderRadius: 21,
+                  backgroundColor: isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.2)",
+                  borderWidth: 1,
+                  borderColor: isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 255, 255, 0.3)",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                NS
-              </Text>
+                <Ionicons
+                  name={isDark ? "sunny" : "moon"}
+                  size={20}
+                  color="#ffffff"
+                />
+              </Pressable>
+
+              {/* Avatar — inline styling */}
+              <View
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  backgroundColor: theme.primary,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 2,
+                  borderColor: "rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 18,
+                    fontWeight: "bold",
+                  }}
+                >
+                  NS
+                </Text>
+              </View>
             </View>
           </View>
 
-          {/* ===== STATS ROW — loop dengan mapppppppp ===== */}
-          <View style={globalStyles.statsRow}>
+          {/* ===== STATS ROW — loop dengan map ===== */}
+          <View style={styles.statsRow}>
             {[
-              { label: "Total", value: dummyStats.total, color: Colors.info },
+              { label: "Total", value: dummyStats.total, color: theme.info },
               {
                 label: "Aktif",
                 value: dummyStats.aktif,
-                color: Colors.warning,
+                color: theme.warning,
               },
               {
                 label: "Selesai",
                 value: dummyStats.selesai,
-                color: Colors.success,
+                color: theme.success,
               },
               {
                 label: "Ditolak",
                 value: dummyStats.ditolak,
-                color: Colors.danger,
+                color: theme.danger,
               },
-            ].map((stat) => renderStatCard(stat.label, stat.value, stat.color))}
+            ].map((stat) => renderStatCard(stat.label, stat.value, stat.color, styles))}
           </View>
         </View>
 
         {/* ===== MENU GRID — loop dengan map() ===== */}
         <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-          <Text style={globalStyles.sectionTitle}>Menu</Text>
+          <Text style={styles.sectionTitle}>Menu</Text>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            {/*
-              LOOP MENGGUNAKAN MAP pada Array of Objects (menuItems):
-              Setiap item punya id, title, icon, color, route
-            */}
-            {menuItems.map((item) => renderMenuButton(item, navigateTo))}
+            {menuItems.map((item) => renderMenuButton(item, navigateTo, theme))}
           </View>
         </View>
 
@@ -323,11 +349,11 @@ export default function HomeScreen() {
               alignItems: "center",
             }}
           >
-            <Text style={globalStyles.sectionTitle}>Laporan Terbaru</Text>
+            <Text style={styles.sectionTitle}>Laporan Terbaru</Text>
             <Pressable onPress={() => navigateTo("/laporan")}>
               <Text
                 style={{
-                  color: Colors.primary,
+                  color: theme.primary,
                   fontSize: 13,
                   fontWeight: "600",
                   marginTop: 24,
@@ -338,12 +364,6 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          {/*
-            FLATLIST — Modul 1 Requirement:
-            Menampilkan array of objects (dummyReports) secara efisien.
-            renderItem menggunakan custom function (ReportCard).
-            keyExtractor mengambil id unik tiap item.
-          */}
           <FlatList
             data={dummyReports}
             renderItem={({ item }) => <ReportCard item={item} />}
@@ -355,11 +375,11 @@ export default function HomeScreen() {
 
         {/* Footer */}
         <View style={{ alignItems: "center", paddingVertical: 30 }}>
-          <Text style={{ color: Colors.textSecondary, fontSize: 12 }}>
+          <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
             SiLapor Mobile v1.0
           </Text>
           <Text
-            style={{ color: Colors.textSecondary, fontSize: 11, marginTop: 2 }}
+            style={{ color: theme.textMuted, fontSize: 11, marginTop: 2 }}
           >
             Sistem Pelaporan Fasilitas Kampus UMM
           </Text>

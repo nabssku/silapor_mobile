@@ -1,21 +1,22 @@
 // =============================================
 // HALAMAN BUAT LAPORAN (Form)
 // Menerapkan: TextInput, Pressable, Custom Function,
-//   Inline & External Styles
+//   Inline & External Styles, & Dynamic Theme
 // =============================================
 
 import { View, Text, TextInput, ScrollView, Pressable, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
-import { globalStyles, Colors } from "../constants/styles";
 import { dummyCategories, dummyLocations } from "../constants/data";
 import { Category, Location } from "../types";
 import { validateLaporanForm } from "../functions";
 
 export default function BuatLaporanScreen() {
   const router = useRouter();
+  const { theme, styles } = useTheme();
 
   const [judul, setJudul] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
@@ -60,16 +61,16 @@ export default function BuatLaporanScreen() {
               paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 20,
-              backgroundColor: selectedId === item.id ? Colors.primary : Colors.card,
-              borderWidth: selectedId === item.id ? 0 : 1,
-              borderColor: Colors.border,
+              backgroundColor: selectedId === item.id ? theme.primary : theme.inputBg,
+              borderWidth: 1,
+              borderColor: selectedId === item.id ? theme.primary : theme.border,
             }}
           >
             <Text
               style={{
                 fontSize: 13,
                 fontWeight: "500",
-                color: selectedId === item.id ? Colors.white : Colors.text,
+                color: selectedId === item.id ? "#ffffff" : theme.text,
               }}
             >
               {item.name}
@@ -81,107 +82,107 @@ export default function BuatLaporanScreen() {
   };
 
   return (
-    <View style={globalStyles.container}>
+    <View style={styles.container}>
       {/* Header */}
-      <View style={globalStyles.header}>
+      <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={Colors.white} />
+            <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </Pressable>
-          <Text style={[globalStyles.headerTitle, { marginLeft: 16, fontSize: 20 }]}>
+          <Text style={[styles.headerTitle, { marginLeft: 16, fontSize: 20 }]}>
             Buat Laporan Baru
           </Text>
         </View>
-        <Text style={globalStyles.headerSubtitle}>
+        <Text style={styles.headerSubtitle}>
           Laporkan kerusakan fasilitas kampus
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={globalStyles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Judul */}
-        <View style={globalStyles.card}>
-          <Text style={{ fontSize: 14, fontWeight: "600", color: Colors.text, marginBottom: 8 }}>
+        <View style={styles.card}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: theme.text, marginBottom: 8 }}>
             Judul Laporan *
           </Text>
           <TextInput
             value={judul}
             onChangeText={setJudul}
             placeholder="Contoh: AC Mati di Ruang 302"
-            placeholderTextColor={Colors.textSecondary}
+            placeholderTextColor={theme.textMuted}
             numberOfLines={1}
             style={{
-              backgroundColor: "#f8fafc",
+              backgroundColor: theme.inputBg,
               borderWidth: 1,
-              borderColor: Colors.border,
+              borderColor: theme.border,
               borderRadius: 12,
               padding: 14,
               fontSize: 14,
-              color: Colors.text,
+              color: theme.text,
             }}
           />
         </View>
 
         {/* Deskripsi */}
-        <View style={globalStyles.card}>
-          <Text style={{ fontSize: 14, fontWeight: "600", color: Colors.text, marginBottom: 8 }}>
+        <View style={styles.card}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: theme.text, marginBottom: 8 }}>
             Deskripsi Kerusakan *
           </Text>
           <TextInput
             value={deskripsi}
             onChangeText={setDeskripsi}
             placeholder="Jelaskan kerusakan secara detail..."
-            placeholderTextColor={Colors.textSecondary}
+            placeholderTextColor={theme.textMuted}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
             style={{
-              backgroundColor: "#f8fafc",
+              backgroundColor: theme.inputBg,
               borderWidth: 1,
-              borderColor: Colors.border,
+              borderColor: theme.border,
               borderRadius: 12,
               padding: 14,
               fontSize: 14,
-              color: Colors.text,
+              color: theme.text,
               minHeight: 120,
             }}
           />
         </View>
 
         {/* Kategori — Loop map() */}
-        <View style={globalStyles.card}>
-          <Text style={{ fontSize: 14, fontWeight: "600", color: Colors.text, marginBottom: 12 }}>
+        <View style={styles.card}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: theme.text, marginBottom: 12 }}>
             Kategori Kerusakan *
           </Text>
           {renderChips(dummyCategories, selectedCategory, setSelectedCategory)}
         </View>
 
         {/* Lokasi — Loop map() */}
-        <View style={globalStyles.card}>
-          <Text style={{ fontSize: 14, fontWeight: "600", color: Colors.text, marginBottom: 12 }}>
+        <View style={styles.card}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: theme.text, marginBottom: 12 }}>
             Lokasi *
           </Text>
           {renderChips(dummyLocations, selectedLocation, setSelectedLocation)}
         </View>
 
         {/* Upload foto placeholder */}
-        <View style={globalStyles.card}>
-          <Text style={{ fontSize: 14, fontWeight: "600", color: Colors.text, marginBottom: 12 }}>
+        <View style={styles.card}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: theme.text, marginBottom: 12 }}>
             Foto Bukti (opsional)
           </Text>
           <Pressable
             style={{
               height: 120,
-              backgroundColor: "#f8fafc",
+              backgroundColor: theme.inputBg,
               borderRadius: 12,
               borderWidth: 2,
-              borderColor: Colors.border,
+              borderColor: theme.border,
               borderStyle: "dashed",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Ionicons name="camera-outline" size={36} color={Colors.textSecondary} />
-            <Text style={{ color: Colors.textSecondary, fontSize: 13, marginTop: 8 }}>
+            <Ionicons name="camera-outline" size={36} color={theme.textSecondary} />
+            <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 8 }}>
               Tap untuk mengambil foto
             </Text>
           </Pressable>
@@ -191,19 +192,19 @@ export default function BuatLaporanScreen() {
         <Pressable
           onPress={handleSubmit}
           style={{
-            backgroundColor: Colors.primary,
+            backgroundColor: theme.primary,
             borderRadius: 14,
             padding: 16,
             alignItems: "center",
             marginTop: 8,
-            shadowColor: Colors.primary,
+            shadowColor: theme.primary,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 8,
             elevation: 5,
           }}
         >
-          <Text style={{ color: Colors.white, fontSize: 16, fontWeight: "bold" }}>
+          <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "bold" }}>
             Kirim Laporan
           </Text>
         </Pressable>

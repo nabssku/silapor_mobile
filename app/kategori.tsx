@@ -1,14 +1,14 @@
 // =============================================
 // HALAMAN KATEGORI
 // Menerapkan: FlatList, Custom Function,
-//   External & Inline Style, Array of Objects
+//   External & Inline Style, Array of Objects & Dynamic Theme
 // =============================================
 
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTheme } from "../context/ThemeContext";
 
-import { globalStyles, Colors } from "../constants/styles";
 import { dummyCategories } from "../constants/data";
 import { Category } from "../types";
 import {
@@ -19,6 +19,7 @@ import {
 
 export default function KategoriScreen() {
   const router = useRouter();
+  const { theme, styles } = useTheme();
 
   // Custom function: render item kategori
   const renderCategory = ({
@@ -34,13 +35,12 @@ export default function KategoriScreen() {
     return (
       <Pressable
         style={[
-          globalStyles.card,
-          { flexDirection: "row", alignItems: "center", marginHorizontal: 20, },
+          styles.card,
+          { flexDirection: "row", alignItems: "center", marginHorizontal: 20 },
         ]}
         onPress={() => {
-          console.log(`Kategori Dipilih:${item.name}`)
-        }
-      }
+          console.log(`Kategori Dipilih: ${item.name}`);
+        }}
       >
         {/* Icon — inline styling */}
         <View
@@ -63,8 +63,8 @@ export default function KategoriScreen() {
 
         {/* Info */}
         <View style={{ flex: 1 }}>
-          <Text style={globalStyles.cardTitle}>{item.name}</Text>
-          <Text style={globalStyles.cardDescription}>{item.description}</Text>
+          <Text style={styles.cardTitle}>{item.name}</Text>
+          <Text style={styles.cardDescription}>{item.description}</Text>
         </View>
 
         {/* Count badge */}
@@ -85,20 +85,20 @@ export default function KategoriScreen() {
   };
 
   return (
-    <View style={globalStyles.container}>
+    <View style={styles.container}>
       {/* Header */}
-      <View style={globalStyles.header}>
+      <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={Colors.white} />
+            <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </Pressable>
           <Text
-            style={[globalStyles.headerTitle, { marginLeft: 16, fontSize: 20 }]}
+            style={[styles.headerTitle, { marginLeft: 16, fontSize: 20 }]}
           >
             Kategori Kerusakan
           </Text>
         </View>
-        <Text style={globalStyles.headerSubtitle}>
+        <Text style={styles.headerSubtitle}>
           {dummyCategories.length} kategori tersedia
         </Text>
       </View>

@@ -1,13 +1,14 @@
 // =============================================
 // HALAMAN DAFTAR SEMUA LAPORAN
-// Menerapkan: FlatList, Custom Function, External Style
+// Menerapkan: FlatList, Custom Function, External Style & Dynamic Theme
 // =============================================
 
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { useTheme } from "../../context/ThemeContext";
 
-import { globalStyles, Colors } from "../../constants/styles";
 import { Report, ReportStatus } from "../../types";
 import { dummyReports } from "../../constants/data";
 import {
@@ -18,7 +19,6 @@ import {
   generateReportCode,
   waktuRelatif,
 } from "../../functions";
-import { useState } from "react";
 
 // Type untuk filter tabs
 type FilterTab = {
@@ -38,6 +38,7 @@ const filterTabs: FilterTab[] = [
 
 export default function LaporanScreen() {
   const router = useRouter();
+  const { theme, styles } = useTheme();
   const [activeFilter, setActiveFilter] = useState<ReportStatus | "semua">("semua");
 
   const filteredReports = filterByStatus(dummyReports, activeFilter);
@@ -50,21 +51,21 @@ export default function LaporanScreen() {
     return (
       <Pressable
         onPress={() => router.push(`/detail/${item.id}`)}
-        style={[globalStyles.card, { marginHorizontal: 20 }]}
+        style={[styles.card, { marginHorizontal: 20 }]}
       >
         {/* Baris atas: Kode + badges */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-          <Text style={{ fontSize: 12, fontWeight: "600", color: Colors.primary }}>
+          <Text style={{ fontSize: 12, fontWeight: "600", color: theme.primary }}>
             {generateReportCode(item.id)}
           </Text>
           <View style={{ flexDirection: "row", gap: 6 }}>
-            <View style={[globalStyles.badge, { backgroundColor: priorityColor.bg }]}>
-              <Text style={[globalStyles.badgeText, { color: priorityColor.text }]}>
+            <View style={[styles.badge, { backgroundColor: priorityColor.bg }]}>
+              <Text style={[styles.badgeText, { color: priorityColor.text }]}>
                 {item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}
               </Text>
             </View>
-            <View style={[globalStyles.badge, { backgroundColor: statusColor.bg }]}>
-              <Text style={[globalStyles.badgeText, { color: statusColor.text }]}>
+            <View style={[styles.badge, { backgroundColor: statusColor.bg }]}>
+              <Text style={[styles.badgeText, { color: statusColor.text }]}>
                 {getStatusLabel(item.status)}
               </Text>
             </View>
@@ -72,8 +73,8 @@ export default function LaporanScreen() {
         </View>
 
         {/* Judul & Deskripsi */}
-        <Text style={globalStyles.cardTitle}>{item.title}</Text>
-        <Text style={[globalStyles.cardDescription, { marginTop: 4 }]} numberOfLines={2}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <Text style={[styles.cardDescription, { marginTop: 4 }]} numberOfLines={2}>
           {item.description}
         </Text>
 
@@ -81,23 +82,23 @@ export default function LaporanScreen() {
         <View style={{ flexDirection: "row", marginTop: 10, gap: 16 }}>
           {item.category && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="pricetag-outline" size={13} color={Colors.textSecondary} />
-              <Text style={{ fontSize: 12, color: Colors.textSecondary, marginLeft: 4 }}>
+              <Ionicons name="pricetag-outline" size={13} color={theme.textSecondary} />
+              <Text style={{ fontSize: 12, color: theme.textSecondary, marginLeft: 4 }}>
                 {item.category.name}
               </Text>
             </View>
           )}
           {item.location && (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="location-outline" size={13} color={Colors.textSecondary} />
-              <Text style={{ fontSize: 12, color: Colors.textSecondary, marginLeft: 4 }}>
+              <Ionicons name="location-outline" size={13} color={theme.textSecondary} />
+              <Text style={{ fontSize: 12, color: theme.textSecondary, marginLeft: 4 }}>
                 {item.location.name}
               </Text>
             </View>
           )}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Ionicons name="time-outline" size={13} color={Colors.textSecondary} />
-            <Text style={{ fontSize: 12, color: Colors.textSecondary, marginLeft: 4 }}>
+            <Ionicons name="time-outline" size={13} color={theme.textSecondary} />
+            <Text style={{ fontSize: 12, color: theme.textSecondary, marginLeft: 4 }}>
               {waktuRelatif(item.createdAt)}
             </Text>
           </View>
@@ -107,18 +108,18 @@ export default function LaporanScreen() {
   };
 
   return (
-    <View style={globalStyles.container}>
+    <View style={styles.container}>
       {/* Header */}
-      <View style={globalStyles.header}>
+      <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={Colors.white} />
+            <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </Pressable>
-          <Text style={[globalStyles.headerTitle, { marginLeft: 16, fontSize: 20 }]}>
+          <Text style={[styles.headerTitle, { marginLeft: 16, fontSize: 20 }]}>
             Semua Laporan
           </Text>
         </View>
-        <Text style={globalStyles.headerSubtitle}>
+        <Text style={styles.headerSubtitle}>
           {filteredReports.length} laporan ditemukan
         </Text>
       </View>
@@ -133,16 +134,16 @@ export default function LaporanScreen() {
               paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 20,
-              backgroundColor: activeFilter === tab.value ? Colors.primary : Colors.card,
-              borderWidth: activeFilter === tab.value ? 0 : 1,
-              borderColor: Colors.border,
+              backgroundColor: activeFilter === tab.value ? theme.primary : theme.card,
+              borderWidth: 1,
+              borderColor: activeFilter === tab.value ? theme.primary : theme.border,
             }}
           >
             <Text
               style={{
                 fontSize: 12,
                 fontWeight: "600",
-                color: activeFilter === tab.value ? Colors.white : Colors.textSecondary,
+                color: activeFilter === tab.value ? "#ffffff" : theme.textSecondary,
               }}
             >
               {tab.label}
@@ -159,7 +160,7 @@ export default function LaporanScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
         ListEmptyComponent={
-          <Text style={globalStyles.emptyText}>
+          <Text style={styles.emptyText}>
             Tidak ada laporan dengan status ini
           </Text>
         }
