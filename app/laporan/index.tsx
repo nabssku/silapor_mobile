@@ -20,26 +20,18 @@ import {
   waktuRelatif,
 } from "../../functions";
 
-// Type untuk filter tabs
-type FilterTab = {
-  readonly id: number;
-  label: string;
-  value: ReportStatus | "semua";
-};
-
 // Array of Objects: Filter tabs
-const filterTabs: FilterTab[] = [
+const filterTabs: { id: number; label: string; value: ReportStatus | "semua" | "aktif" }[] = [
   { id: 0, label: "Semua", value: "semua" },
-  { id: 1, label: "Menunggu", value: "pending" },
-  { id: 2, label: "Diproses", value: "in_progress" },
-  { id: 3, label: "Selesai", value: "resolved" },
-  { id: 4, label: "Ditolak", value: "rejected" },
+  { id: 1, label: "Aktif", value: "aktif" },
+  { id: 2, label: "Selesai", value: "resolved" },
+  { id: 3, label: "Ditolak", value: "rejected" },
 ];
 
 export default function LaporanScreen() {
   const router = useRouter();
   const { theme, styles } = useTheme();
-  const [activeFilter, setActiveFilter] = useState<ReportStatus | "semua">("semua");
+  const [activeFilter, setActiveFilter] = useState<ReportStatus | "semua" | "aktif">("semua");
 
   const filteredReports = filterByStatus(dummyReports, activeFilter);
 

@@ -74,52 +74,9 @@ const welcomeTime = (nama: string, styles: any, theme: ThemeColors) => {
 };
 
 // =============================================
-// CUSTOM FUNCTION: Render Menu Button
+// CUSTOM FUNCTION: Render Menu Button (Removed: use default)
 // =============================================
-const renderMenuButton = (item: MenuItem, onPress: (route: string) => void, theme: ThemeColors) => {
-  return (
-    <Pressable
-      key={item.id}
-      onPress={() => onPress(item.route)}
-      // Inline styling + Theme Card
-      style={{
-        flex: 1,
-        backgroundColor: theme.card,
-        borderColor: theme.border,
-        borderWidth: 1,
-        borderRadius: 14,
-        padding: 16,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-      }}
-    >
-      <View
-        style={{
-          backgroundColor: item.color + "20",
-          borderRadius: 12,
-          padding: 10,
-          marginBottom: 8,
-        }}
-      >
-        <Ionicons name={item.icon as any} size={24} color={item.color} />
-      </View>
-      <Text
-        style={{
-          fontSize: 12,
-          fontWeight: "600",
-          color: theme.text,
-          textAlign: "center",
-        }}
-      >
-        {item.title}
-      </Text>
-    </Pressable>
-  );
-};
+// renderMenuButton function was here, now inlined in the sticky bar.
 
 // =============================================
 // CUSTOM FUNCTION: Render Report Card (untuk FlatList)
@@ -248,7 +205,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         {/* ===== HEADER ===== */}
         <View style={styles.header}>
           <View
@@ -312,7 +269,6 @@ export default function HomeScreen() {
           {/* ===== STATS ROW — loop dengan map ===== */}
           <View style={styles.statsRow}>
             {[
-              { label: "Total", value: dummyStats.total, color: theme.info },
               {
                 label: "Aktif",
                 value: dummyStats.aktif,
@@ -329,14 +285,6 @@ export default function HomeScreen() {
                 color: theme.danger,
               },
             ].map((stat) => renderStatCard(stat.label, stat.value, stat.color, styles))}
-          </View>
-        </View>
-
-        {/* ===== MENU GRID — loop dengan map() ===== */}
-        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-          <Text style={styles.sectionTitle}>Menu</Text>
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            {menuItems.map((item) => renderMenuButton(item, navigateTo, theme))}
           </View>
         </View>
 
@@ -385,6 +333,37 @@ export default function HomeScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      {/* ===== MENU BAR — Sticky Bottom ===== */}
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 65,
+          backgroundColor: theme.background,
+          borderTopWidth: 1,
+          borderColor: theme.border,
+          flexDirection: "row",
+          justifyContent: "space-around",
+          alignItems: "center",
+          paddingHorizontal: 10,
+        }}
+      >
+        {menuItems.map((item) => (
+          <Pressable
+            key={item.id}
+            onPress={() => navigateTo(item.route)}
+            style={{ alignItems: "center", justifyContent: "center", flex: 1 }}
+          >
+            <Ionicons name={item.icon as any} size={22} color={item.color} />
+            <Text style={{ fontSize: 10, color: theme.text, marginTop: 2, fontWeight: "600" }}>
+              {item.title}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 }

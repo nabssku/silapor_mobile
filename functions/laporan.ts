@@ -10,9 +10,11 @@ import { dummyReports } from "../constants/data";
 // Custom function: Filter reports berdasarkan status
 export const filterByStatus = (
   reports: Report[],
-  status: ReportStatus | "semua"
+  status: ReportStatus | "semua" | "aktif"
 ): Report[] => {
   if (status === "semua") return reports;
+  if (status === "aktif")
+    return reports.filter((r) => r.status === "pending" || r.status === "in_progress");
   return reports.filter((r) => r.status === status);
 };
 
@@ -71,8 +73,8 @@ export const waktuRelatif = (dateString: string): string => {
 // Custom function: Label status laporan
 export const getStatusLabel = (status: ReportStatus): string => {
   const statusMap: Record<ReportStatus, string> = {
-    pending: "Menunggu",
-    in_progress: "Diproses",
+    pending: "Aktif",
+    in_progress: "Aktif",
     resolved: "Selesai",
     rejected: "Ditolak",
   };
@@ -82,7 +84,7 @@ export const getStatusLabel = (status: ReportStatus): string => {
 // Custom function: Warna badge berdasarkan status
 export const getStatusColor = (status: ReportStatus): { bg: string; text: string } => {
   const colorMap: Record<ReportStatus, { bg: string; text: string }> = {
-    pending: { bg: "#fef3c7", text: "#92400e" },
+    pending: { bg: "#dbeafe", text: "#1e40af" },
     in_progress: { bg: "#dbeafe", text: "#1e40af" },
     resolved: { bg: "#dcfce7", text: "#166534" },
     rejected: { bg: "#fee2e2", text: "#991b1b" },
