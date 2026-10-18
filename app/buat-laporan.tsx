@@ -9,15 +9,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useReports } from "../context/ReportContext";
 
 import { dummyCategories, dummyLocations } from "../constants/data";
 import { Category, Location } from "../types";
 import { validateLaporanForm } from "../functions";
 
 export default function BuatLaporanScreen() {
+  // HOOKS: Router untuk navigasi page, useTheme & useReports untuk state
   const router = useRouter();
   const { theme, styles } = useTheme();
+  const { addReport } = useReports();
 
+  // STATE: Menyimpan input form dan pilihan kategori/lokasi
   const [judul, setJudul] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -33,13 +37,22 @@ export default function BuatLaporanScreen() {
     return true;
   };
 
-  // Custom function: submit form
+  // Custom function: submit form & NAVIGASI PAGE kembali setelah simpan state
   const handleSubmit = (): void => {
     if (!validateForm()) return;
+
+    // STATE: Menambah laporan ke state global melalui hook
+    addReport({
+      title: judul,
+      description: deskripsi,
+      categoryId: selectedCategory!,
+      locationId: selectedLocation!,
+    });
 
     Alert.alert(
       "Berhasil! ✅",
       `Laporan "${judul}" berhasil dikirim dan akan segera ditindaklanjuti.`,
+      // NAVIGASI PAGE: Kembali ke halaman sebelumnya (router.back)
       [{ text: "OK", onPress: () => router.back() }]
     );
   };

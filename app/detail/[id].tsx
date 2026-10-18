@@ -7,9 +7,9 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useTheme } from "../../context/ThemeContext";
+import { useReports } from "../../context/ReportContext";
 
 import {
-  findReport,
   formatTanggal,
   getStatusLabel,
   getStatusColor,
@@ -19,16 +19,20 @@ import {
 
 export default function DetailScreen() {
   const router = useRouter();
+  // HOOKS: useLocalSearchParams untuk mengambil id dari rute dinamis & useReports untuk data state
   const { id } = useLocalSearchParams<{ id: string }>();
   const { theme, styles } = useTheme();
+  const { findReportById } = useReports();
 
-  const report = findReport(id);
+  // STATE: Mendapatkan data laporan spesifik dari state
+  const report = findReportById(id);
 
   if (!report) {
     return (
       <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
         <Ionicons name="alert-circle-outline" size={64} color={theme.textSecondary} />
         <Text style={[styles.emptyText, { marginTop: 16 }]}>Laporan tidak ditemukan</Text>
+        {/* NAVIGASI PAGE: Kembali ke halaman sebelumnya dengan router.back() */}
         <Pressable onPress={() => router.back()} style={{ marginTop: 20 }}>
           <Text style={{ color: theme.primary, fontWeight: "600" }}>← Kembali</Text>
         </Pressable>

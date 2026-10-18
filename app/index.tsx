@@ -9,12 +9,13 @@ import { View, Text, ScrollView, Pressable, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTheme } from "../context/ThemeContext";
+import { useReports } from "../context/ReportContext";
 
 // Types & Interfaces
 import { Report, MenuItem } from "../types";
 import { ThemeColors } from "../constants/theme";
 // Array of Objects & Dummy Data
-import { dummyReports, dummyStats, menuItems } from "../constants/data";
+import { dummyStats, menuItems } from "../constants/data";
 // Custom Functions
 import {
   formatTanggal,
@@ -196,7 +197,14 @@ const ReportCard = ({ item }: { item: Report }) => {
 // =============================================
 export default function HomeScreen() {
   const router = useRouter();
+  // HOOKS: useTheme untuk tampilan & useReports untuk mengakses state laporan global
   const { theme, styles, isDark, toggleTheme } = useTheme();
+  const { reports } = useReports();
+
+  // STATE: Menghitung statistik secara dinamis dari state laporan
+  const aktifCount = reports.filter(r => r.status === "pending" || r.status === "in_progress").length;
+  const selesaiCount = reports.filter(r => r.status === "resolved").length;
+  const ditolakCount = reports.filter(r => r.status === "rejected").length;
 
   // Custom function: navigasi
   const navigateTo = (route: string): void => {
@@ -271,17 +279,17 @@ export default function HomeScreen() {
             {[
               {
                 label: "Aktif",
-                value: dummyStats.aktif,
+                value: aktifCount,
                 color: theme.warning,
               },
               {
                 label: "Selesai",
-                value: dummyStats.selesai,
+                value: selesaiCount,
                 color: theme.success,
               },
               {
                 label: "Ditolak",
-                value: dummyStats.ditolak,
+                value: ditolakCount,
                 color: theme.danger,
               },
             ].map((stat) => renderStatCard(stat.label, stat.value, stat.color, styles))}
@@ -313,7 +321,7 @@ export default function HomeScreen() {
           </View>
 
           <FlatList
-            data={dummyReports}
+            data={reports.slice(0, 5)}
             renderItem={({ item }) => <ReportCard item={item} />}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}

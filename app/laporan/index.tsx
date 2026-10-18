@@ -5,12 +5,12 @@
 
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import { useReports } from "../../context/ReportContext";
 
 import { Report, ReportStatus } from "../../types";
-import { dummyReports } from "../../constants/data";
 import {
   filterByStatus,
   getStatusLabel,
@@ -31,9 +31,17 @@ const filterTabs: { id: number; label: string; value: ReportStatus | "semua" | "
 export default function LaporanScreen() {
   const router = useRouter();
   const { theme, styles } = useTheme();
+  // HOOKS: useReports untuk state global, useLocalSearchParams untuk parameter navigasi page
+  const { reports } = useReports();
+  const { categoryId } = useLocalSearchParams<{ categoryId?: string }>();
+  // STATE: Menyimpan status filter laporan yang sedang aktif
   const [activeFilter, setActiveFilter] = useState<ReportStatus | "semua" | "aktif">("semua");
 
-  const filteredReports = filterByStatus(dummyReports, activeFilter);
+  let filteredReports = filterByStatus(reports, activeFilter);
+  // NAVIGASI PAGE: Filter laporan berdasarkan parameter kategori yang dikirim dari halaman kategori
+  if (categoryId) {
+    filteredReports = filteredReports.filter((r) => r.category?.id === Number(categoryId));
+  }
 
   // Custom function: Render setiap item laporan
   const renderReportItem = ({ item }: { item: Report }) => {

@@ -39,7 +39,11 @@ export default function KategoriScreen() {
           { flexDirection: "row", alignItems: "center", marginHorizontal: 20 },
         ]}
         onPress={() => {
-          console.log(`Kategori Dipilih: ${item.name}`);
+          // NAVIGASI PAGE: Berpindah ke halaman laporan dengan membawa parameter categoryId
+          router.push({
+            pathname: "/laporan",
+            params: { categoryId: item.id.toString() },
+          });
         }}
       >
         {/* Icon — inline styling */}
