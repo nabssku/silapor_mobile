@@ -3,11 +3,13 @@
 // Menerapkan: Custom Function, Loop (map),
 //   FlatList, Type, Array of Objects,
 //   Inline & External Styles, Komponen Dasar & Dynamic Theme
+// MODUL 3: Async Function (async/await), API Call, Loading & Error State
 // =============================================
 
-import { View, Text, ScrollView, Pressable, FlatList } from "react-native";
+import { View, Text, ScrollView, Pressable, FlatList, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useReports } from "../context/ReportContext";
 
@@ -24,6 +26,7 @@ import {
   getStatusColor,
   generateReportCode,
 } from "../functions";
+import { getReportsFromApi } from "../functions/api";
 
 // =============================================
 // CUSTOM FUNCTION: Render Stat Card
@@ -199,7 +202,32 @@ export default function HomeScreen() {
   const router = useRouter();
   // HOOKS: useTheme untuk tampilan & useReports untuk mengakses state laporan global
   const { theme, styles, isDark, toggleTheme } = useTheme();
-  const { reports } = useReports();
+  const { reports, addApiReports } = useReports();
+  // STATE MODUL 3: Status loading dan pesan error saat fetch API
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // MODUL 3: Custom async function untuk mengambil laporan dari External API
+  const muatLaporan = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      // await: tunggu Promise dari getReportsFromApi selesai dulu
+      const dataApi = await getReportsFromApi();
+      addApiReports(dataApi);
+    } catch (error) {
+      // Masuk sini kalau Promise di-reject()
+      setErrorMessage(typeof error === "string" ? error : "Gagal memuat laporan dari server");
+    } finally {
+      // Jalan baik sukses maupun gagal
+      setIsLoading(false);
+    }
+  };
+
+  // useEffect: panggil API sekali saat halaman utama pertama kali dibuka
+  useEffect(() => {
+    muatLaporan();
+  }, []);
 
   // STATE: Menghitung statistik secara dinamis dari state laporan
   const aktifCount = reports.filter(r => r.status === "pending" || r.status === "in_progress").length;
@@ -319,6 +347,42 @@ export default function HomeScreen() {
               </Text>
             </Pressable>
           </View>
+
+          {/* MODUL 3: Indikator loading saat fetch API berjalan */}
+          {isLoading && (
+            <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, gap: 8 }}>
+              <ActivityIndicator size="small" color={theme.primary} />
+              <Text style={{ fontSize: 12, color: theme.textSecondary }}>
+                Memuat laporan dari server...
+              </Text>
+            </View>
+          )}
+
+          {/* MODUL 3: Pesan error + tombol coba lagi kalau fetch gagal */}
+          {errorMessage && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginVertical: 8,
+                padding: 12,
+                borderRadius: 12,
+                backgroundColor: theme.card,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+            >
+              <Text style={{ flex: 1, fontSize: 12, color: theme.textSecondary }}>
+                {errorMessage}
+              </Text>
+              <Pressable onPress={muatLaporan}>
+                <Text style={{ fontSize: 12, fontWeight: "600", color: theme.primary }}>
+                  Coba lagi
+                </Text>
+              </Pressable>
+            </View>
+          )}
 
           <FlatList
             data={reports.slice(0, 5)}

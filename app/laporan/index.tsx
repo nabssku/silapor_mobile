@@ -1,12 +1,13 @@
 // =============================================
 // HALAMAN DAFTAR SEMUA LAPORAN
 // Menerapkan: FlatList, Custom Function, External Style & Dynamic Theme
+// MODUL 3: Async Function (async/await), API Call, Loading & Error State
 // =============================================
 
-import { View, Text, FlatList, Pressable } from "react-native";
+import { View, Text, FlatList, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { useReports } from "../../context/ReportContext";
 
@@ -19,6 +20,7 @@ import {
   generateReportCode,
   waktuRelatif,
 } from "../../functions";
+import { getReportsFromApi } from "../../functions/api";
 
 // Array of Objects: Filter tabs
 const filterTabs: { id: number; label: string; value: ReportStatus | "semua" | "aktif" }[] = [
@@ -32,10 +34,35 @@ export default function LaporanScreen() {
   const router = useRouter();
   const { theme, styles } = useTheme();
   // HOOKS: useReports untuk state global, useLocalSearchParams untuk parameter navigasi page
-  const { reports } = useReports();
+  const { reports, addApiReports } = useReports();
   const { categoryId } = useLocalSearchParams<{ categoryId?: string }>();
   // STATE: Menyimpan status filter laporan yang sedang aktif
   const [activeFilter, setActiveFilter] = useState<ReportStatus | "semua" | "aktif">("semua");
+  // STATE MODUL 3: Status loading dan pesan error saat fetch API
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // MODUL 3: Custom async function untuk mengambil laporan dari External API
+  const muatLaporan = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      // await: tunggu Promise dari getReportsFromApi selesai dulu
+      const dataApi = await getReportsFromApi();
+      addApiReports(dataApi);
+    } catch (error) {
+      // Masuk sini kalau Promise di-reject()
+      setErrorMessage(typeof error === "string" ? error : "Gagal memuat laporan dari server");
+    } finally {
+      // Jalan baik sukses maupun gagal
+      setIsLoading(false);
+    }
+  };
+
+  // useEffect: panggil API sekali saat halaman pertama kali dibuka
+  useEffect(() => {
+    muatLaporan();
+  }, []);
 
   let filteredReports = filterByStatus(reports, activeFilter);
   // NAVIGASI PAGE: Filter laporan berdasarkan parameter kategori yang dikirim dari halaman kategori
@@ -151,6 +178,43 @@ export default function LaporanScreen() {
           </Pressable>
         ))}
       </View>
+
+      {/* MODUL 3: Indikator loading saat fetch API berjalan */}
+      {isLoading && (
+        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 8, gap: 8 }}>
+          <ActivityIndicator size="small" color={theme.primary} />
+          <Text style={{ fontSize: 12, color: theme.textSecondary }}>
+            Memuat laporan dari server...
+          </Text>
+        </View>
+      )}
+
+      {/* MODUL 3: Pesan error + tombol coba lagi kalau fetch gagal */}
+      {errorMessage && (
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginHorizontal: 20,
+            marginBottom: 8,
+            padding: 12,
+            borderRadius: 12,
+            backgroundColor: theme.card,
+            borderWidth: 1,
+            borderColor: theme.border,
+          }}
+        >
+          <Text style={{ flex: 1, fontSize: 12, color: theme.textSecondary }}>
+            {errorMessage}
+          </Text>
+          <Pressable onPress={muatLaporan}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: theme.primary }}>
+              Coba lagi
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* FlatList Laporan */}
       <FlatList
