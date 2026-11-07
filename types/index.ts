@@ -81,3 +81,13 @@ export interface MenuItem {
   color: string;
   route: string;
 }
+
+// =============================================
+// MODUL 3 — Interface untuk response External API
+// Generic <T>: tipe isi "data" bisa diganti-ganti (di sini Report[])
+// =============================================
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
