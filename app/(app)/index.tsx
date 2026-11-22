@@ -1,39 +1,45 @@
 // =============================================
-// HOME SCREEN — Dashboard SiLapor
-// Menerapkan: Custom Function, Loop (map),
-//   FlatList, Type, Array of Objects,
-//   Inline & External Styles, Komponen Dasar & Dynamic Theme
-// MODUL 3: Async Function (async/await), API Call, Loading & Error State
+// HOME SCREEN — Dashboard SiLapor (Protected Route)
+// Menerapkan: Auth Profile Dinamis, Sign Out, Cloud Reports Sync,
+//   Pull-to-Refresh, Loop (map), FlatList, & Dynamic Theme
 // =============================================
 
-import { View, Text, ScrollView, Pressable, FlatList, ActivityIndicator } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
-import { useTheme } from "../context/ThemeContext";
-import { useReports } from "../context/ReportContext";
+import { useState } from "react";
+import { useTheme } from "../../context/ThemeContext";
+import { useReports } from "../../context/ReportContext";
+import { useAuth } from "../../context/AuthContext";
 
 // Types & Interfaces
-import { Report, MenuItem } from "../types";
-import { ThemeColors } from "../constants/theme";
-// Array of Objects & Dummy Data
-import { dummyStats, menuItems } from "../constants/data";
-// Custom Functions
+import { Report } from "../../types";
+import { ThemeColors } from "../../constants/theme";
+import { menuItems } from "../../constants/data";
 import {
-  formatTanggal,
   waktuRelatif,
   getStatusLabel,
   getStatusColor,
   generateReportCode,
-} from "../functions";
-import { getReportsFromApi } from "../functions/api";
+} from "../../functions";
 
-// =============================================
-// CUSTOM FUNCTION: Render Stat Card
-// =============================================
-const renderStatCard = (label: string, value: number, color: string, styles: any) => {
+const renderStatCard = (
+  label: string,
+  value: number,
+  color: string,
+  styles: any
+) => {
   return (
-    // Inline styling (langsung di style prop)
     <View
       style={[styles.statCard, { backgroundColor: color }]}
       key={label}
@@ -44,47 +50,48 @@ const renderStatCard = (label: string, value: number, color: string, styles: any
   );
 };
 
-// ============================================
-// Custom Fungsi buat welcomeTime
-// ex : Selamat Pagi, Siang, Sore, Malam
-// ============================================
-const welcomeTime = (nama: string, styles: any, theme: ThemeColors) => {
-  const greet = () => {
-    const now = new Date().getHours();
-    if (now >= 4 && now < 11) {
-      return "Pagi";
-    }
-    if (now >= 11 && now < 15) {
-      return "Siang";
-    }
-    if (now >= 15 && now < 18) {
-      return "Sore";
-    } else {
-      return "Malam";
-    }
-  };
+const getGreeting = (): string => {
+  const now = new Date().getHours();
+  if (now >= 4 && now < 11) return "Pagi";
+  if (now >= 11 && now < 15) return "Siang";
+  if (now >= 15 && now < 18) return "Sore";
+  return "Malam";
+};
 
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "SL";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+};
+
+const formatRoleLabel = (rawRole: unknown): string => {
+  if (typeof rawRole !== "string" || !rawRole.trim()) return "Mahasiswa";
+  return rawRole.charAt(0).toUpperCase() + rawRole.slice(1);
+};
+
+const welcomeTime = (
+  nama: string,
+  roleLabel: string,
+  nimNidn: string,
+  styles: any,
+  theme: ThemeColors
+) => {
   return (
-    <View>
+    <View style={{ flex: 1, paddingRight: 10 }}>
       <Text style={{ color: theme.textMuted, fontSize: 14 }}>
-        Halo, Selamat {greet()}
+        Halo, Selamat {getGreeting()}
       </Text>
-      <Text style={styles.headerTitle}>{nama}</Text>
-      <Text style={styles.headerSubtitle}>
-        Mahasiswa · 202410370110357
+      <Text style={styles.headerTitle} numberOfLines={1}>
+        {nama}
+      </Text>
+      <Text style={styles.headerSubtitle} numberOfLines={1}>
+        {roleLabel} · {nimNidn}
       </Text>
     </View>
   );
 };
 
-// =============================================
-// CUSTOM FUNCTION: Render Menu Button (Removed: use default)
-// =============================================
-// renderMenuButton function was here, now inlined in the sticky bar.
-
-// =============================================
-// CUSTOM FUNCTION: Render Report Card (untuk FlatList)
-// =============================================
 const ReportCard = ({ item }: { item: Report }) => {
   const router = useRouter();
   const { theme, styles } = useTheme();
@@ -93,7 +100,6 @@ const ReportCard = ({ item }: { item: Report }) => {
   return (
     <Pressable
       onPress={() => router.push(`/detail/${item.id}`)}
-      // External style + inline style (gabungan)
       style={[
         styles.card,
         { flexDirection: "row", alignItems: "flex-start" },
@@ -129,7 +135,6 @@ const ReportCard = ({ item }: { item: Report }) => {
           >
             {generateReportCode(item.id)}
           </Text>
-          {/* Badge status — inline styling */}
           <View
             style={[styles.badge, { backgroundColor: statusColor.bg }]}
           >
@@ -195,53 +200,75 @@ const ReportCard = ({ item }: { item: Report }) => {
   );
 };
 
-// =============================================
-// MAIN COMPONENT: Home Screen
-// =============================================
 export default function HomeScreen() {
   const router = useRouter();
-  // HOOKS: useTheme untuk tampilan & useReports untuk mengakses state laporan global
   const { theme, styles, isDark, toggleTheme } = useTheme();
-  const { reports, addApiReports } = useReports();
-  // STATE MODUL 3: Status loading dan pesan error saat fetch API
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { user, signOut } = useAuth();
+  const {
+    reports,
+    isLoadingReports,
+    reportsError,
+    refreshReports,
+  } = useReports();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // MODUL 3: Custom async function untuk mengambil laporan dari External API
-  const muatLaporan = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  const displayName =
+    (user?.user_metadata?.full_name as string | undefined) ||
+    user?.email?.split("@")[0] ||
+    "Pengguna";
+  const roleLabel = formatRoleLabel(user?.user_metadata?.role);
+  const nimNidn =
+    (user?.user_metadata?.nim_nidn as string | undefined) ||
+    user?.email ||
+    "-";
+  const initials = getInitials(displayName);
+
+  const performSignOut = async () => {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
     try {
-      // await: tunggu Promise dari getReportsFromApi selesai dulu
-      const dataApi = await getReportsFromApi();
-      addApiReports(dataApi);
-    } catch (error) {
-      // Masuk sini kalau Promise di-reject()
-      setErrorMessage(typeof error === "string" ? error : "Gagal memuat laporan dari server");
+      await signOut();
+    } catch {
+      Alert.alert("Gagal Keluar", "Tidak dapat mengakhiri sesi saat ini.");
     } finally {
-      // Jalan baik sukses maupun gagal
-      setIsLoading(false);
+      setIsSigningOut(false);
     }
   };
 
-  // useEffect: panggil API sekali saat halaman utama pertama kali dibuka
-  useEffect(() => {
-    muatLaporan();
-  }, []);
+  const handleSignOutPress = () => {
+    if (Platform.OS === "web") {
+      performSignOut();
+      return;
+    }
+    Alert.alert("Keluar dari SiLapor", "Apakah Anda yakin ingin keluar?", [
+      { text: "Batal", style: "cancel" },
+      { text: "Keluar", style: "destructive", onPress: performSignOut },
+    ]);
+  };
 
   // STATE: Menghitung statistik secara dinamis dari state laporan
-  const aktifCount = reports.filter(r => r.status === "pending" || r.status === "in_progress").length;
-  const selesaiCount = reports.filter(r => r.status === "resolved").length;
-  const ditolakCount = reports.filter(r => r.status === "rejected").length;
+  const aktifCount = reports.filter(
+    (r) => r.status === "pending" || r.status === "in_progress"
+  ).length;
+  const selesaiCount = reports.filter((r) => r.status === "resolved").length;
+  const ditolakCount = reports.filter((r) => r.status === "rejected").length;
 
-  // Custom function: navigasi
   const navigateTo = (route: string): void => {
     router.push(route as any);
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 120 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoadingReports}
+            onRefresh={refreshReports}
+            tintColor={theme.primary}
+          />
+        }
+      >
         {/* ===== HEADER ===== */}
         <View style={styles.header}>
           <View
@@ -251,37 +278,63 @@ export default function HomeScreen() {
               alignItems: "center",
             }}
           >
-            {welcomeTime("Nabil", styles, theme)}
+            {welcomeTime(displayName, roleLabel, nimNidn, styles, theme)}
 
-            {/* Header Right: Theme Switcher Button + Avatar */}
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {/* Header Right: Theme Switcher + Sign Out + Avatar */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <Pressable
                 onPress={toggleTheme}
                 accessibilityLabel="Ganti tema terang / gelap"
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 21,
-                  backgroundColor: isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.2)",
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: isDark
+                    ? "rgba(255, 255, 255, 0.15)"
+                    : "rgba(255, 255, 255, 0.2)",
                   borderWidth: 1,
-                  borderColor: isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 255, 255, 0.3)",
+                  borderColor: isDark
+                    ? "rgba(255, 255, 255, 0.2)"
+                    : "rgba(255, 255, 255, 0.3)",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 <Ionicons
                   name={isDark ? "sunny" : "moon"}
-                  size={20}
+                  size={18}
                   color="#ffffff"
                 />
               </Pressable>
 
-              {/* Avatar — inline styling */}
+              <Pressable
+                onPress={handleSignOutPress}
+                disabled={isSigningOut}
+                accessibilityLabel="Keluar akun"
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "rgba(239, 68, 68, 0.25)",
+                  borderWidth: 1,
+                  borderColor: "rgba(239, 68, 68, 0.45)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {isSigningOut ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Ionicons name="log-out-outline" size={18} color="#ffffff" />
+                )}
+              </Pressable>
+
+              {/* Avatar */}
               <View
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
                   backgroundColor: theme.primary,
                   alignItems: "center",
                   justifyContent: "center",
@@ -292,17 +345,17 @@ export default function HomeScreen() {
                 <Text
                   style={{
                     color: "#ffffff",
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: "bold",
                   }}
                 >
-                  NS
+                  {initials}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* ===== STATS ROW — loop dengan map ===== */}
+          {/* ===== STATS ROW ===== */}
           <View style={styles.statsRow}>
             {[
               {
@@ -320,7 +373,9 @@ export default function HomeScreen() {
                 value: ditolakCount,
                 color: theme.danger,
               },
-            ].map((stat) => renderStatCard(stat.label, stat.value, stat.color, styles))}
+            ].map((stat) =>
+              renderStatCard(stat.label, stat.value, stat.color, styles)
+            )}
           </View>
         </View>
 
@@ -333,7 +388,7 @@ export default function HomeScreen() {
               alignItems: "center",
             }}
           >
-            <Text style={styles.sectionTitle}>Laporan Terbaru</Text>
+            <Text style={styles.sectionTitle}>Laporan Saya</Text>
             <Pressable onPress={() => navigateTo("/laporan")}>
               <Text
                 style={{
@@ -348,18 +403,23 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          {/* MODUL 3: Indikator loading saat fetch API berjalan */}
-          {isLoading && (
-            <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, gap: 8 }}>
+          {isLoadingReports && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingVertical: 8,
+                gap: 8,
+              }}
+            >
               <ActivityIndicator size="small" color={theme.primary} />
               <Text style={{ fontSize: 12, color: theme.textSecondary }}>
-                Memuat laporan dari server...
+                Menyinkronkan laporan dari Supabase...
               </Text>
             </View>
           )}
 
-          {/* MODUL 3: Pesan error + tombol coba lagi kalau fetch gagal */}
-          {errorMessage && (
+          {reportsError && (
             <View
               style={{
                 flexDirection: "row",
@@ -371,13 +431,20 @@ export default function HomeScreen() {
                 backgroundColor: theme.card,
                 borderWidth: 1,
                 borderColor: theme.border,
+                gap: 10,
               }}
             >
-              <Text style={{ flex: 1, fontSize: 12, color: theme.textSecondary }}>
-                {errorMessage}
+              <Text style={{ flex: 1, fontSize: 12, color: theme.dangerText }}>
+                {reportsError}
               </Text>
-              <Pressable onPress={muatLaporan}>
-                <Text style={{ fontSize: 12, fontWeight: "600", color: theme.primary }}>
+              <Pressable onPress={refreshReports}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "600",
+                    color: theme.primary,
+                  }}
+                >
                   Coba lagi
                 </Text>
               </Pressable>
@@ -390,19 +457,51 @@ export default function HomeScreen() {
             keyExtractor={(item) => item.id}
             scrollEnabled={false}
             showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              !isLoadingReports ? (
+                <View style={[styles.card, { alignItems: "center", paddingVertical: 24 }]}>
+                  <Ionicons
+                    name="document-text-outline"
+                    size={36}
+                    color={theme.textSecondary}
+                  />
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontWeight: "600",
+                      marginTop: 10,
+                      fontSize: 14,
+                    }}
+                  >
+                    Belum ada laporan
+                  </Text>
+                  <Text
+                    style={{
+                      color: theme.textSecondary,
+                      fontSize: 12,
+                      textAlign: "center",
+                      marginTop: 4,
+                    }}
+                  >
+                    Buat laporan baru untuk akun ini dan simpan langsung ke Supabase.
+                  </Text>
+                </View>
+              ) : null
+            }
           />
         </View>
 
         {/* Footer */}
         <View style={{ alignItems: "center", paddingVertical: 30 }}>
           <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
-            SiLapor Mobile v1.0
+            SiLapor Mobile v1.0 · Akun Terverifikasi
           </Text>
           <Text
             style={{ color: theme.textMuted, fontSize: 11, marginTop: 2 }}
           >
-            Sistem Pelaporan Fasilitas Kampus UMM
+            {user?.email || "Sistem Pelaporan Fasilitas Kampus UMM"}
           </Text>
+
         </View>
       </ScrollView>
 
@@ -430,7 +529,14 @@ export default function HomeScreen() {
             style={{ alignItems: "center", justifyContent: "center", flex: 1 }}
           >
             <Ionicons name={item.icon as any} size={22} color={item.color} />
-            <Text style={{ fontSize: 10, color: theme.text, marginTop: 2, fontWeight: "600" }}>
+            <Text
+              style={{
+                fontSize: 10,
+                color: theme.text,
+                marginTop: 2,
+                fontWeight: "600",
+              }}
+            >
               {item.title}
             </Text>
           </Pressable>

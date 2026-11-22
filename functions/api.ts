@@ -7,6 +7,7 @@ import { ApiResponse, Report } from "../types";
 
 const API_URL = "https://radya.my.id/api/laporan";
 
+
 // Mengambil daftar laporan dari External API.
 // Fungsi ini langsung mengembalikan Promise<Report[]>
 export function getReportsFromApi(): Promise<Report[]> {

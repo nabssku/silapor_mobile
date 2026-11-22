@@ -1,27 +1,26 @@
 // =============================================
 // HALAMAN KATEGORI
-// Menerapkan: FlatList, Custom Function,
-//   External & Inline Style, Array of Objects & Dynamic Theme
 // =============================================
 
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
+import { useReports } from "../../context/ReportContext";
 
-import { dummyCategories } from "../constants/data";
-import { Category } from "../types";
+import { dummyCategories } from "../../constants/data";
+import { Category } from "../../types";
 import {
   countReportsByCategory,
   categoryColors,
   getCategoryIcon,
-} from "../functions";
+} from "../../functions";
 
 export default function KategoriScreen() {
   const router = useRouter();
-  const { theme, styles } = useTheme();
+  const { styles } = useTheme();
+  const { reports } = useReports();
 
-  // Custom function: render item kategori
   const renderCategory = ({
     item,
     index,
@@ -30,7 +29,7 @@ export default function KategoriScreen() {
     index: number;
   }) => {
     const color = categoryColors[index % categoryColors.length];
-    const count = countReportsByCategory(item.id);
+    const count = countReportsByCategory(item.id, reports);
 
     return (
       <Pressable
@@ -39,14 +38,12 @@ export default function KategoriScreen() {
           { flexDirection: "row", alignItems: "center", marginHorizontal: 20 },
         ]}
         onPress={() => {
-          // NAVIGASI PAGE: Berpindah ke halaman laporan dengan membawa parameter categoryId
           router.push({
             pathname: "/laporan",
             params: { categoryId: item.id.toString() },
           });
         }}
       >
-        {/* Icon — inline styling */}
         <View
           style={{
             width: 50,
@@ -65,13 +62,11 @@ export default function KategoriScreen() {
           />
         </View>
 
-        {/* Info */}
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>{item.name}</Text>
           <Text style={styles.cardDescription}>{item.description}</Text>
         </View>
 
-        {/* Count badge */}
         <View
           style={{
             backgroundColor: color + "18",
@@ -90,15 +85,12 @@ export default function KategoriScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#ffffff" />
           </Pressable>
-          <Text
-            style={[styles.headerTitle, { marginLeft: 16, fontSize: 20 }]}
-          >
+          <Text style={[styles.headerTitle, { marginLeft: 16, fontSize: 20 }]}>
             Kategori Kerusakan
           </Text>
         </View>
@@ -107,7 +99,6 @@ export default function KategoriScreen() {
         </Text>
       </View>
 
-      {/* FlatList kategori */}
       <FlatList
         data={dummyCategories}
         renderItem={renderCategory}
